@@ -6,11 +6,25 @@ This project is a text summarization application built with Flask and React. It 
 - TextRank
 - LSA
 - BERT
-- Frecuencia de palabras
+- Word Frequency
 
 ## Project Structure
 
-Text_summarization_application/ │ ├── backend/ │ ├── app.py │ ├── preprocessing.py │ ├── techniques/ │ │ ├── init.py │ │ ├── technique1.py │ │ └── technique2.py │ └── requirements.txt ├── frontend/ │ ├── public/ │ ├── src/ │ ├── package.json │ └── ... └── README.md
+Text_summarization_application/ 
+│ ├── backend/ 
+│ ├── app.py 
+│ ├── preprocessing.py 
+│ ├── techniques/ 
+│ │ ├── init.py 
+│ │ ├── technique1.py 
+│ │ └── technique2.py 
+│ └── requirements.txt 
+├── frontend/ 
+│ ├── public/ 
+│ ├── src/ 
+│ ├── package.json 
+│ └── ... 
+└── README.md
 
 ## Installation
 
