@@ -102,7 +102,7 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 jupyterlab_widgets==3.0.13
 kaleido==0.2.1
-keras==3.7.0
+keras==2.12.0
 kiwisolver==1.4.7
 langcodes==3.4.0
 language_data==1.2.0
@@ -215,6 +215,7 @@ tensorflow==2.18.0
 tensorflow_intel==2.18.0
 termcolor==2.5.0
 terminado==0.18.1
+tf_keras==2.18.0
 thinc==8.2.5
 threadpoolctl==3.5.0
 tinycss2==1.3.0

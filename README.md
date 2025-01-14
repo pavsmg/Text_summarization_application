@@ -11,20 +11,23 @@ This project is a text summarization application built with Flask and React. It 
 ## Project Structure
 
 Text_summarization_application/ 
-│ ├── backend/ 
+├── backend/ 
 │ ├── app.py 
-│ ├── preprocessing.py 
+│ ├── summarizer.py 
 │ ├── techniques/ 
 │ │ ├── init.py 
-│ │ ├── technique1.py 
-│ │ └── technique2.py 
-│ └── requirements.txt 
+│ │ ├── lsa.py 
+│ │ ├── textrank.py 
+│ │ ├── tfidf.py 
+│ │ ├── transformer.py 
+│ │ └── word_freq.py 
 ├── frontend/ 
 │ ├── public/ 
 │ ├── src/ 
 │ ├── package.json 
 │ └── ... 
-└── README.md
+├── README.md
+└── requirements.txt 
 
 ## Installation
 

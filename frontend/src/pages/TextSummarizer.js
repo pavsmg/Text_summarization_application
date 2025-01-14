@@ -135,6 +135,15 @@ function TextSummarizer() {
         </div>
       </main>
 
+      <div className="text-center mt-4 mb-6">
+          <button
+            onClick={() => setShowTable(true)}
+            className="py-2 px-4 bg-blue-500 text-white rounded-md font-semibold hover:bg-blue-600"
+          >
+            Conocer más acerca de las técnicas
+          </button>
+      </div>
+
       {showTable && <TechniquesTable closeTable={() => setShowTable(false)} />}
       <Footer />
     </div>
