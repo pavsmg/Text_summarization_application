@@ -28,7 +28,7 @@ def summarize():
     if technique == "TF-IDF":
         summarized_text = extract_keywords_tfidf()
     elif technique == "TextRank":
-        summarized_text = f"Resumen generado con {technique}: {text}"
+        summarized_text = extract_keywords_textrank()
     elif technique == "BART":
     '''
 

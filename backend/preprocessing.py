@@ -1,3 +1,21 @@
+'''
+### Normalization pipeline
+
+Una vez con los textos que queremos resumir, podemos hacer la etapa de normalización. 
+Se relizarán dos variaciones de la normalización.
+
+Dependiendo de la técnica de resumen que se elija, 
+se utilizará un pipeline de normalización diferente.
+Tenemos cuatro, se explican a continuación sus diferencias:
+
+Estructura del pipeline:
+
+Pipeline 1: Remueve puntuación y stopwords, aplica stemming.
+Pipeline 2: Remueve puntuación y stopwords, aplica lematización.
+Pipeline 3: Remueve stopwords, aplica lematización.
+Pipeline 4: No remueve puntuación ni stopwords, aplica lematización
+ (especial para el resumen).
+'''
 import string
 import nltk
 import re
@@ -16,22 +34,25 @@ nltk.download('wordnet')
 nltk.download('omw-1.4')
 
 # Stemmer 
+'''
+Preparamos el stemmer y lematizador.
+'''
+stop_words = set(stopwords.words('english')) # Lista de stopwords en inglés
+lemmatizer = WordNetLemmatizer()
 stemmer = PorterStemmer()
 
 # Función para convertir etiquetas POS de nltk a las de wordnet
-def get_wordnet_pos(tag):
-    if tag.startswith('J'):
+def get_wordnet_pos(treebank_tag):
+    if treebank_tag.startswith('J'):
         return wordnet.ADJ
-    elif tag.startswith('V'):
+    elif treebank_tag.startswith('V'):
         return wordnet.VERB
-    elif tag.startswith('N'):
+    elif treebank_tag.startswith('N'):
         return wordnet.NOUN
-    elif tag.startswith('R'):
+    elif treebank_tag.startswith('R'):
         return wordnet.ADV
     else:
         return wordnet.NOUN  # Si no hay etiqueta, usar sustantivo como default
-
-lemmatizer = WordNetLemmatizer()
 
 def apply_lemmatization(tagged_text):
     lemmatized_words = []
@@ -42,82 +63,35 @@ def apply_lemmatization(tagged_text):
     return lemmatized_words 
 
 
-def normalization(raw_corpus, pipeline_version):
-    """
-    Normaliza un corpus de texto aplicando diferentes pipelines de procesamiento.
+def preprocess_text(text, pipeline):
+    text = text.lower()
+    tokens = word_tokenize(text)
+    
+    if 'remove_punctuation' in pipeline:
+        tokens = [word for word in tokens if word.isalnum()]
+        print("Tokenization applied")
+    
+    if 'remove_stopwords' in pipeline:
+        tokens = [word for word in tokens if word not in stop_words]
+        print("Stopwords removed")
+    
+    if 'stemming' in pipeline:
+        tokens = [stemmer.stem(word) for word in tokens]
+        print("Stemming applied")
 
-    Parámetros:
-    - raw_corpus: Lista de cadenas de texto (documentos).
-    - pipeline_version: Entero que indica la versión del pipeline (1, 2, 3 o 4).
+    if 'lemmatization' in pipeline:
+        pos_tags = pos_tag(tokens)
+        tokens = [lemmatizer.lemmatize(word, get_wordnet_pos(tag)) for word, tag in pos_tags]
+        print("Lemmatization applied")
 
-    Retorna:
-    - processed_corpus: Lista de listas de tokens procesados.
-    """
-    processed_corpus = []
-    stemmer = PorterStemmer()  # Definir el stemmer si se utiliza en el pipeline
+    return tokens
 
-    for document in raw_corpus:
-        # Convertir a minúsculas
-        document = document.lower()
-        # Eliminar números
-        document = re.sub(r'\d+', '', document)
-        
-        if pipeline_version == 1:
-            # Pipeline 1: Remover puntuación y stopwords, aplicar stemming
-            # Eliminar puntuación
-            document = re.sub(r'[^\w\s]', '', document)
-            # Tokenización
-            tokens = word_tokenize(document)
-            # Remover stopwords
-            tokens = [word for word in tokens if word not in stop_words]
-            # Aplicación de POS-tagging
-            tagged_tokens = pos_tag(tokens)
-            # Aplicación de stemming
-            stemmed_tokens = [stemmer.stem(word) for word, tag in tagged_tokens]
-            processed_corpus.append(stemmed_tokens)
+def preprocess_corpus(corpus, pipeline):
+    return [preprocess_text(doc, pipeline) for doc in corpus]
 
-        elif pipeline_version == 2:
-            # Pipeline 2: Remover puntuación y stopwords, aplicar lematización
-            # Eliminar puntuación
-            document = re.sub(r'[^\w\s]', '', document)
-            # Tokenización
-            tokens = word_tokenize(document)
-            # Remover stopwords
-            tokens = [word for word in tokens if word not in stop_words]
-            # Aplicación de POS-tagging
-            tagged_tokens = pos_tag(tokens)
-            # Aplicación de lematización
-            lemmatized_tokens = apply_lemmatization(tagged_tokens)
-            processed_corpus.append(lemmatized_tokens)
+# Example pipelines
+pipeline1 = ['remove_punctuation', 'remove_stopwords', 'stemming']
+pipeline2 = ['remove_punctuation', 'remove_stopwords', 'lemmatization']
+pipeline3 = ['remove_stopwords', 'lemmatization']
+pipeline4 = ['lemmatization']
 
-        elif pipeline_version == 3:
-            # Pipeline 3: Remover stopwords, aplicar lematización
-            # Tokenización
-            tokens = word_tokenize(document)
-            # Remover stopwords
-            tokens = [word for word in tokens if word not in stop_words]
-            # Aplicación de POS-tagging
-            tagged_tokens = pos_tag(tokens)
-            # Aplicación de lematización
-            lemmatized_tokens = apply_lemmatization(tagged_tokens)
-            processed_corpus.append(lemmatized_tokens)
-
-        elif pipeline_version == 4:
-            # Pipeline 4: Remover puntuación y stopwords sin stemming ni lematización
-            # Tokenización
-            tokens = word_tokenize(document)
-            # Eliminar puntuación
-            tokens = [word for word in tokens if word not in string.punctuation]
-            # Remover stopwords
-            tokens = [word for word in tokens if word not in stop_words]
-            processed_corpus.append(tokens)
-
-        else:
-            print("Por favor, elige una versión de pipeline válida (1, 2, 3 o 4).")
-            return None
-
-    return processed_corpus
-
-print(processed_corpus)
-
-processed_corpus = normalization(text_corpus, 4)

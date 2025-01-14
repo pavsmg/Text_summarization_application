@@ -1,26 +1,46 @@
+import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
 
-def extract_keywords_tfidf(processed_corpus, top_n=15):
+# Download NLTK resources
+nltk.download('punkt')
+
+def tfidf_summarizer(text, num_sentences=3):
     """
-    Extrae palabras clave utilizando TF-IDF.
+    Summarize text using TF-IDF.
+
     Args:
-        processed_corpus (list of list of str): Corpus tokenizado.
-        top_n (int): Número de palabras clave a extraer por documento.
+        text (str): Input text to summarize.
+        num_sentences (int): Number of sentences to include in the summary.
+
     Returns:
-        list of dict: Palabras clave para cada documento.
+        str: The summarized text.
     """
-    processed_texts = [' '.join(doc_tokens) for doc_tokens in processed_corpus]
-    tfidf_vectorizer = TfidfVectorizer()
-    tfidf_matrix = tfidf_vectorizer.fit_transform(processed_texts)
-    feature_names = tfidf_vectorizer.get_feature_names_out()
+    # Step 1: Split the text into sentences
+    sentences = sent_tokenize(text)
+    print("Sentences:", sentences)  # Debugging line
 
-    keywords_per_doc = []
+    # Ensure num_sentences does not exceed the number of sentences
+    if num_sentences > len(sentences):
+        num_sentences = len(sentences)
 
-    for doc_idx in range(tfidf_matrix.shape[0]):
-        tfidf_vector = tfidf_matrix[doc_idx]
-        tfidf_scores = tfidf_vector.toarray().flatten()
-        top_indices = tfidf_scores.argsort()[::-1][:top_n]
-        top_words = [feature_names[i] for i in top_indices]
-        keywords_per_doc.append({"doc_index": doc_idx, "keywords": top_words})
+    # Step 2: Compute TF-IDF matrix
+    vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = vectorizer.fit_transform(sentences)
+    print("TF-IDF Matrix Shape:", tfidf_matrix.shape)  # Debugging line
 
-    return keywords_per_doc
+    # Step 3: Compute sentence scores by summing TF-IDF values for each sentence
+    sentence_scores = np.array(tfidf_matrix.sum(axis=1)).flatten()
+    print("Sentence Scores:", sentence_scores)  # Debugging line
+
+    # Step 4: Select top-ranked sentences
+    sorted_indices = np.argsort(-sentence_scores)[:num_sentences]  # Top `num_sentences` indices
+    sorted_indices = sorted(sorted_indices)  # Sort indices to preserve sentence order
+    print("Selected Indices:", sorted_indices)  # Debugging line
+
+    # Step 5: Construct summary
+    summary = " ".join([sentences[i] for i in sorted_indices])
+    return summary
+
+
