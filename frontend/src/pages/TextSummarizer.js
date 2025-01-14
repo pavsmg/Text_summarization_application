@@ -19,6 +19,10 @@ function TextSummarizer() {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      if (!file.name.endsWith(".txt")) {
+        alert("Please upload a valid .txt file.");
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (e) => {
         setUploadedText(e.target.result);
@@ -27,22 +31,42 @@ function TextSummarizer() {
     }
   };
 
-  const handleSummarize = () => {
-    if (!uploadedText) {
-      alert("Primero sube un archivo de texto.");
-      return;
-    }
+  const handleTechniqueChange = (event) => {
+    setSelectedTechnique(event.target.value);
+  };
 
-    if (!selectedTechnique) {
-      alert("Selecciona una técnica para el resumen.");
+  const handleSummarize = async () => {
+    if (!uploadedText || !selectedTechnique) {
+      alert("Please upload text and select a technique.");
       return;
     }
 
     setProcessing(true);
-    setTimeout(() => {
-      setSummary(`Resumen generado usando la técnica: ${selectedTechnique}`);
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/summarize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: uploadedText,
+          technique: selectedTechnique,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSummary(data.summary);
+      } else {
+        alert(`Error: ${data.error || "Something went wrong"}`);
+      }
+    } catch (error) {
+      alert(`Error: ${error.message || "Unable to connect to the server"}`);
+    } finally {
       setProcessing(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -69,23 +93,22 @@ function TextSummarizer() {
             </h3>
             <select
               value={selectedTechnique}
-              onChange={(e) => setSelectedTechnique(e.target.value)}
+              onChange={handleTechniqueChange}
               className="block w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-400"
             >
               <option value="">-- Selecciona una técnica --</option>
               <option value="TF-IDF">TF-IDF</option>
-              <option value="Frecuencia de palabras">Frecuencia de palabras</option>
-              {/* <option value="Rake">Rake</option> */}
+              <option value="WordFreq">Frecuencia de palabras</option>
               <option value="TextRank">TextRank</option>
-              <option value="Latent Semantic Analysis (LSA)">Latent Semantic Analysis (LSA)</option>
-              <option value="BERT para resumen">BERT para resumen</option>
+              <option value="LSA">Latent Semantic Analysis (LSA)</option>
+              <option value="BERT">BERT para resumen</option>
             </select>
           </div>
 
           <button
             onClick={handleSummarize}
             className="py-2 px-4 rounded-md bg-blue-500 text-white font-semibold hover:bg-blue-600 transition shadow-md focus:ring-2 focus:ring-blue-400"
-            disabled={processing}
+            disabled={processing || !uploadedText || !selectedTechnique}
           >
             {processing ? "Procesando..." : "Generar Resumen"}
           </button>
@@ -112,20 +135,7 @@ function TextSummarizer() {
         </div>
       </main>
 
-        {/* Botón para mostrar/ocultar la tabla */}
-        <div className="text-center mt-4 mb-6">
-          <button
-            onClick={() => setShowTable(true)}
-            className="py-2 px-4 bg-blue-500 text-white rounded-md font-semibold hover:bg-blue-600"
-          >
-            Conocer más acerca de las técnicas
-          </button>
-        </div>
-
-
-        {/* Tabla de técnicas (solo si showTable es true) */}
-        {showTable && <TechniquesTable closeTable={() => setShowTable(false)} />}
-
+      {showTable && <TechniquesTable closeTable={() => setShowTable(false)} />}
       <Footer />
     </div>
   );
